@@ -51,7 +51,7 @@ def move(s,From,To):
   d2[To]+=[df] # Put disk onto destination peg.
   return news # return new state
 
-def goal_test(s):
+def goal_test(s): #Checks the state if is goal or not
   '''If the first two pegs are empty, then s is a goal state.'''
   return s.d['peg1']==[] and s.d['peg2']==[]
 

@@ -14,9 +14,12 @@ from queue import PriorityQueue
 
 # DO NOT CHANGE THIS SECTION 
 if sys.argv==[''] or len(sys.argv)<2:
-    import EightPuzzleWithHeuristics as Problem
-    heuristics = lambda s: Problem.HEURISTICS['h_manhattan'](s)
-    
+    if(sys.argv[0] == "EightPuzzleWithHeuristics"):
+        import EightPuzzleWithHeuristics as Problem
+        heuristics = lambda s: Problem.HEURISTICS[sys.argv[1]](s)
+    elif(sys.argv[0] == "TowerOfHanoi"):
+        import TowerOfHanoi as Problem
+        heuristics = lambda s: Problem.HEURISTICS[sys.argv[1]](s)
 else:
     import importlib
     Problem = importlib.import_module(sys.argv[1])
@@ -32,7 +35,7 @@ def runAStar():
     #initial_state = Problem.CREATE_INITIAL_STATE(keyVal)
     initial_state = Problem.CREATE_INITIAL_STATE()
     print("Initial State:")
-    print(initial_state)
+    print(str(initial_state) + ", F=10, G=0, H=10") #Change into F=5,G=0,H=10 if TowerOfHanoi_Manning3
     global COUNT, BACKLINKS
     COUNT = 0
     BACKLINKS = {}
@@ -57,6 +60,7 @@ def AStar(initial_state):
     F = {}
     G[initial_state] = 0
 
+    print("\nPattern: new_state", "F()", "G()", "H():")
     while len(OPEN) > 0:
         index = findMin()
         S = OPEN[index]
@@ -70,8 +74,7 @@ def AStar(initial_state):
         CLOSED.append(S)
         
         # DO NOT CHANGE THIS SECTION: begining 
-        if Problem.GOAL_TEST(S):
-            print(Problem.GOAL_MESSAGE_FUNCTION(S))
+        if Problem.GOAL_TEST(S): #Defined in TowerOfHanoi as: If the first two pegs are empty, then s is a goal state. 
             path = backtrace(S)
             return path, Problem.PROBLEM_NAME
         # DO NOT CHANGE THIS SECTION: end
@@ -83,10 +86,16 @@ def AStar(initial_state):
                 new_state = op.state_transf(S)
                 if not (new_state in OPEN) and not (new_state in CLOSED):
                     G[new_state] = G[S] + 1
-                    F[new_state] = G[new_state] + heuristics(new_state)
+                    H = heuristics(new_state)
+                    F[new_state] = G[new_state] + H
                     BACKLINKS[new_state] = S
                     OPEN.append(new_state)
                     PRI.append(F[new_state])
+                    print("\n" + str(new_state) + ", F="+ str(F[new_state]) + ", G=" + str(G[new_state]) + ", H=" + str(H))
+                    print("OPEN: " + strList(OPEN))
+                    print("PRI: " + strList(PRI))
+                    print("BACKLINKS: " + strList(BACKLINKS))
+                    #print("open:",strList(OPEN),"\npri:",strList(PRI),"\nbacklink:",strList(BACKLINKS))
                 elif BACKLINKS[new_state] != -1:
                     other_parent = BACKLINKS[new_state]
                     temp = F[new_state]-G[other_parent]+G[S]
@@ -108,15 +117,24 @@ def findMin():
             index = i
     return index
 
+def strList(l:list):
+    out = ""
+    for i in l:
+        out = out + str(i) + "  "
+    return out    
+
+def printList(l:list):
+    print(strList(l))
+
 # DO NOT CHANGE
 def backtrace(S):
     global BACKLINKS
     path = []
     while not S == -1:
-        path.append(S)
+        path.append([S][0])
         S = BACKLINKS[S]
     path.reverse()
-    print("Solution path: ")
+    print("\nSolution path: ")
     for s in path:
         print(s)
     print("\nPath length = "+str(len(path)-1))
